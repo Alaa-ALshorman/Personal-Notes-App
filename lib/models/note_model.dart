@@ -1,33 +1,28 @@
 class Note {
-  final String id;
+  final int? id;
   final String title;
   final String content;
-  final DateTime createdDate;
+  final String createdAt;
 
-  Note({
-    required this.id,
-    required this.title,
-    required this.content,
-    required this.createdDate,
-  });
+  Note({this.id, required this.title, required this.content, required this.createdAt});
 
-  // تحويل الكائن إلى Map ليتم تخزينه في قاعدة البيانات
+  // تحويل البيانات لخريطة (Map) ليتم حفظها في قاعدة البيانات
   Map<String, dynamic> toMap() {
     return {
       'id': id,
       'title': title,
       'content': content,
-      'createdDate': createdDate.toIso8601String(),
+      'createdAt': createdAt,
     };
   }
 
-  // تحويل البيانات القادمة من قاعدة البيانات إلى كائن Note
+  // استرجاع البيانات من قاعدة البيانات وتحويلها لكائن Note
   factory Note.fromMap(Map<String, dynamic> map) {
     return Note(
       id: map['id'],
       title: map['title'],
       content: map['content'],
-      createdDate: DateTime.parse(map['createdDate']),
+      createdAt: map['createdAt'],
     );
   }
 }

@@ -2,26 +2,29 @@ import 'package:flutter/material.dart';
 import 'screens/home_screen.dart';
 
 void main() {
-  runApp(const MyNotesApp());
+  runApp(const PersonalNotesApp());
 }
 
-class MyNotesApp extends StatelessWidget {
-  const MyNotesApp({super.key});
+class PersonalNotesApp extends StatelessWidget {
+  const PersonalNotesApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'My Notes',
+      title: 'Personal Notes App',
       debugShowCheckedModeBanner: false,
-      // اذهبي لملف lib/main.dart وتأكدي من تعديل هذا الجزء:
-theme: ThemeData(
-  useMaterial3: true,
-  // يجب استخدام CardThemeData وليس CardTheme
-  cardTheme: const CardThemeData(
-    elevation: 2,
-    margin: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-  ),
-),
+      theme: ThemeData(
+        useMaterial3: true,
+        
+        colorScheme: ColorScheme.fromSeed(seedColor:  Colors.purple,), 
+        appBarTheme: const AppBarTheme(
+         
+          backgroundColor: Colors.purple, 
+          foregroundColor: Color.fromARGB(255, 251, 251, 250), 
+          centerTitle: true,
+        ),
+        
+      ),
       home: const HomeScreen(),
     );
   }

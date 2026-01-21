@@ -11,61 +11,106 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  List<Note> notes = [];
-  final _storageService = LocalStorageService();
+  final DatabaseService _dbService = DatabaseService();
 
   @override
-  void initState() {
-    super.initState();
-    _refreshNotes();
-  }
-
-  void _refreshNotes() async {
-    final data = await _storageService.getAllNotes();
-    setState(() {
-      notes = data;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) { // إضافة الميثود المفقودة
+  Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('My Notes')),
-      body: notes.isEmpty
-          ? const Center(child: Text('No notes yet! Tap + to add one.'))
-          : ListView.builder(
-              itemCount: notes.length,
-              itemBuilder: (context, index) => Card(
+      appBar: AppBar(
+        title: const Text('My Personal Notes'),
+        centerTitle: true,
+      ),
+      body: FutureBuilder<List<Note>>(
+        // جلب البيانات من قاعدة البيانات المحلية (Persistence)
+        future: _dbService.getNotes(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator(color: Colors.purple));
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return const Center(
+              child: Text('No notes found. Tap the button to add one!'),
+            );
+          }
+
+          return ListView.builder(
+            itemCount: snapshot.data!.length,
+            itemBuilder: (context, index) {
+              Note note = snapshot.data![index];
+              return Card(
+                elevation: 2,
+                margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 child: ListTile(
-                  title: Text(notes[index].title, style: const TextStyle(fontWeight: FontWeight.bold)),
-                  subtitle: Text(notes[index].content),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.delete, color: Colors.red),
-                    onPressed: () async {
-                      await _storageService.deleteNote(notes[index].id);
-                      _refreshNotes();
-                    },
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  title: Text(
+                    note.title,
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                   ),
-                  onTap: () async {
-                    await Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => AddEditNoteScreen(note: notes[index])),
-                    );
-                    _refreshNotes();
-                  },
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 5),
+                      Text(
+                        note.content,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(color: Colors.grey[700]),
+                      ),
+                      const SizedBox(height: 8),
+                      // عرض التاريخ التلقائي المطلوب
+                      Text(
+                        'Date: ${note.createdAt}',
+                        style: const TextStyle(fontSize: 11, color: Colors.grey),
+                      ),
+                    ],
+                  ),
+                  // أزرار الحذف والتعديل في الزاوية
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.edit, color: Colors.purple),
+                        onPressed: () async {
+                          await Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => AddEditNoteScreen(note: note)),
+                          );
+                          setState(() {}); // تحديث القائمة بعد التعديل
+                        },
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.delete, color: Colors.redAccent),
+                        onPressed: () async {
+                          // تأكيد الحذف
+                          await _dbService.deleteNote(note.id!);
+                          setState(() {}); // تحديث القائمة بعد الحذف
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Note deleted successfully')),
+                            );
+                          }
+                        },
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ),
+              );
+            },
+          );
+        },
+      ),
       floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.purple,
+        foregroundColor: Colors.white,
         onPressed: () async {
           await Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const AddEditNoteScreen()),
           );
-          _refreshNotes();
+          setState(() {}); 
         },
         child: const Icon(Icons.add),
       ),
     );
   }
-} // إغلاق الكلاس بشكل صحيح
+}

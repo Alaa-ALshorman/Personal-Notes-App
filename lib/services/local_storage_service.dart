@@ -2,46 +2,52 @@ import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import '../models/note_model.dart';
 
-class LocalStorageService {
-  static Database? _database;
+class DatabaseService {
+  static Database? _db;
 
-  Future<Database> get database async {
-    if (_database != null) return _database!;
-    _database = await _initDB('notes.db');
-    return _database!;
+  // الحصول على قاعدة البيانات أو إنشاؤها إذا لم تكن موجودة
+  Future<Database> get db async {
+    if (_db != null) return _db!;
+    _db = await initDb();
+    return _db!;
   }
 
-  Future<Database> _initDB(String filePath) async {
-    final dbPath = await getDatabasesPath();
-    final path = join(dbPath, filePath);
-    return await openDatabase(path, version: 1, onCreate: _createDB);
+  initDb() async {
+    String path = join(await getDatabasesPath(), 'notes.db');
+    return await openDatabase(
+      path, 
+      version: 1, 
+      onCreate: (db, version) async {
+        // إنشاء الجدول المطلوب (id, title, content, createdAt)
+        await db.execute(
+          'CREATE TABLE notes (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, content TEXT, createdAt TEXT)'
+        );
+      },
+    );
   }
 
-  Future _createDB(Database db, int version) async {
-    await db.execute('''
-      CREATE TABLE notes (
-        id TEXT PRIMARY KEY,
-        title TEXT,
-        content TEXT,
-        createdDate TEXT
-      )
-    ''');
+  // إضافة ملاحظة جديدة (Create)
+  Future<int> addNote(Note note) async {
+    var dbClient = await db;
+    return await dbClient.insert('notes', note.toMap());
   }
 
-  Future<void> insertNote(Note note) async {
-    final db = await database;
-    await db.insert('notes', note.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
+  // استرجاع كل الملاحظات (Read)
+  Future<List<Note>> getNotes() async {
+    var dbClient = await db;
+    List<Map<String, dynamic>> maps = await dbClient.query('notes', orderBy: 'id DESC');
+    return maps.map((item) => Note.fromMap(item)).toList();
   }
 
-  Future<List<Note>> getAllNotes() async {
-    final db = await database;
-    final List<Map<String, dynamic>> maps = await db.query('notes');
-    return maps.map((json) => Note.fromMap(json)).toList();
+  // حذف ملاحظة (Delete)
+  Future<int> deleteNote(int id) async {
+    var dbClient = await db;
+    return await dbClient.delete('notes', where: 'id = ?', whereArgs: [id]);
   }
 
-  // الكود الجديد: دالة الحذف
-  Future<void> deleteNote(String id) async {
-    final db = await database;
-    await db.delete('notes', where: 'id = ?', whereArgs: [id]);
+  // تعديل ملاحظة (Update)
+  Future<int> updateNote(Note note) async {
+    var dbClient = await db;
+    return await dbClient.update('notes', note.toMap(), where: 'id = ?', whereArgs: [note.id]);
   }
 }
