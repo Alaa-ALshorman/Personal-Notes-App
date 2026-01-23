@@ -6,7 +6,6 @@ class Note {
 
   Note({this.id, required this.title, required this.content, required this.createdAt});
 
-  // تحويل البيانات لخريطة (Map) ليتم حفظها في قاعدة البيانات
   Map<String, dynamic> toMap() {
     return {
       'id': id,
@@ -16,7 +15,7 @@ class Note {
     };
   }
 
-  // استرجاع البيانات من قاعدة البيانات وتحويلها لكائن Note
+  
   factory Note.fromMap(Map<String, dynamic> map) {
     return Note(
       id: map['id'],

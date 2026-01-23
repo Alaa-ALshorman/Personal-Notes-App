@@ -16,16 +16,14 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('My Personal Notes'),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: const Text('My Personal Notes'), centerTitle: true),
       body: FutureBuilder<List<Note>>(
-        // جلب البيانات من قاعدة البيانات المحلية (Persistence)
         future: _dbService.getNotes(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator(color: Colors.purple));
+            return const Center(
+              child: CircularProgressIndicator(color: Colors.purple),
+            );
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
             return const Center(
               child: Text('No notes found. Tap the button to add one!'),
@@ -39,12 +37,20 @@ class _HomeScreenState extends State<HomeScreen> {
               return Card(
                 elevation: 2,
                 margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
                 child: ListTile(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
                   title: Text(
                     note.title,
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                    ),
                   ),
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -57,14 +63,17 @@ class _HomeScreenState extends State<HomeScreen> {
                         style: TextStyle(color: Colors.grey[700]),
                       ),
                       const SizedBox(height: 8),
-                      // عرض التاريخ التلقائي المطلوب
+
                       Text(
                         'Date: ${note.createdAt}',
-                        style: const TextStyle(fontSize: 11, color: Colors.grey),
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: Colors.grey,
+                        ),
                       ),
                     ],
                   ),
-                  // أزرار الحذف والتعديل في الزاوية
+
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -73,20 +82,24 @@ class _HomeScreenState extends State<HomeScreen> {
                         onPressed: () async {
                           await Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => AddEditNoteScreen(note: note)),
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  AddEditNoteScreen(note: note),
+                            ),
                           );
-                          setState(() {}); // تحديث القائمة بعد التعديل
+                          setState(() {});
                         },
                       ),
                       IconButton(
                         icon: const Icon(Icons.delete, color: Colors.redAccent),
                         onPressed: () async {
-                          // تأكيد الحذف
                           await _dbService.deleteNote(note.id!);
-                          setState(() {}); // تحديث القائمة بعد الحذف
+                          setState(() {});
                           if (mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Note deleted successfully')),
+                              const SnackBar(
+                                content: Text('Note deleted successfully'),
+                              ),
                             );
                           }
                         },
@@ -107,7 +120,7 @@ class _HomeScreenState extends State<HomeScreen> {
             context,
             MaterialPageRoute(builder: (context) => const AddEditNoteScreen()),
           );
-          setState(() {}); 
+          setState(() {});
         },
         child: const Icon(Icons.add),
       ),
