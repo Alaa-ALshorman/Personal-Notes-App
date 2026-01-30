@@ -26,6 +26,7 @@ class PersonalNotesApp extends StatelessWidget {
         
       ),
       home: const HomeScreen(),
+
     );
   }
 }
