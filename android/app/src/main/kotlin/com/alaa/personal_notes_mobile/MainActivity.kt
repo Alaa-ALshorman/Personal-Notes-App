@@ -1,4 +1,4 @@
-package com.example.personal_notes_mobile
+package com.alaa.personalnotes
 
 import io.flutter.embedding.android.FlutterActivity
 
